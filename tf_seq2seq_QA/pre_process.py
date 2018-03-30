@@ -26,14 +26,17 @@ def generatefile2gensimVW(path, dim):
                 wf.write(lines)
 
 
-def generate_embeding_dictionary(keyVector, dictName="dictionary.txt"):
+def generate_embeding_dictionary(keyVector, dictName="dictionary.txt",splitEND=True):
     if not isinstance(keyVector, KeyedVectors):
         raise TypeError("keyVector must be gensim.models.KeyedVectors")
     embedPath = os.path.join(os.getcwd(), 'embedding')
     if not os.path.exists(embedPath):
         os.mkdir(embedPath)
+    if splitEND:
+        embeddingName = '_'.join(dictName.split('.')[:-1] + ["embedding"])
+    else:
+        embeddingName = '_'.join(dictName.split('.') + ["embedding"])
 
-    embeddingName = '_'.join(dictName.split('.')[:-1] + ["embedding"])
     embedding = keyVector.syn0
     dictionary = [[indexobj.index, word] for word, indexobj in keyVector.vocab.items()]
     dictionary.sort(key=lambda x: x[0])
@@ -47,7 +50,10 @@ def getIND2word_WORD2ind_EMBEDDING(path='glove_100D.txt', decode='utf8', dictLoa
     embedPath = os.path.join(os.getcwd(), 'embedding')
     if not os.path.exists(embedPath):
         raise NameError("no path {0:s) exist!}".format(embedPath))
-    embeddingName = '_'.join(path.split('.')[:-1] + ["embedding"])
+    if path.split('.')[-1]=='txt':
+        embeddingName = '_'.join(path.split('.')[:-1] + ["embedding"])
+    else:
+        embeddingName = '_'.join(path.split('.') + ["embedding"])
     ind2word = {}
     word2ind = {}
     embedding = None
@@ -168,20 +174,35 @@ def indexDataSave(arr, path):
 def indexDataLoad(path):
     return np.load(os.path.join(DataPATH, path) + '.npy')
 
-
-if __name__ == "__main__":
+def main():
+    # convert to gensim.Word2Vector
     # generatefile2gensimVW('glove.6B.100d.txt', 100)
     # dvcPath = NewdvcPath_F('glove.6B.100d.txt')
-    # ans = KeyedVectors.load_word2vec_format(dvcPath)
-    # generate_embeding_dictionary(ans, dictName='glove_100D.txt')
+    # get embeding and dictionary
+    pass
+    dvcPath = 'wiki.en.text.100d100lit5wdVector'
+    fn_1=lambda x:os.path.join(dictionarypath,dvcPath)
+    ans = KeyedVectors.load_word2vec_format(fn_1(dvcPath))
+    generate_embeding_dictionary(ans, dictName='wiki.en.text.100d100lit5wdVector', splitEND=False)
     # ind2word, word2ind, embedding = getIND2word_WORD2ind_EMBEDDING('glove_100D.txt')
-    from tf_seq2seq_QA.corpus_parse import run_test
-
+    from corpus_parse import run_test
+    
     qs = run_test()
-    dt = SimpleDict('glove_100D.txt')
+    dt = SimpleDict(dvcPath)
     ParaMaxLength = max(list(map(lambda x: len(x[1]), qs)))
     QuesMaxLength = max(list(map(lambda x: len(x[0]), qs)))
     questionind = dt.Transform_sentence2ind([x[0] for x in qs], QuesMaxLength + 1, addStart=False)
     paragraphind = dt.Transform_sentence2ind([x[1] for x in qs], ParaMaxLength + 1, addStart=False)
-    indexDataSave(questionind, 'SQuAD_Question_index_glove_100D')
-    indexDataSave(paragraphind, 'SQuAD_Paragraphy_index_glove_100D')
+    indexDataSave(questionind, 'SQuAD_Question_index_w2v_100D100l')
+    indexDataSave(paragraphind, 'SQuAD_Paragraphy_index_w2v_100D100l')
+
+    print(list(map(lambda x:dt.Transform_ind2word(x),paragraphind[:30])))
+    
+    #       num:1
+    #       name dt:glove_100D.txt
+    #       name indexD_qs:SQuAD_Question_index_glove_100D
+    #       name indeD_pg:SQuAD_Paragraphy_index_glove_100D
+
+
+if __name__ == "__main__":
+    main()

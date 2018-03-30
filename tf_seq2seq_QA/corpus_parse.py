@@ -2,7 +2,7 @@ import os
 import json
 from nltk.tokenize import word_tokenize
 import nltk
-
+import gensim
 try:
     word_tokenize(' ')
 except LookupError:
@@ -114,3 +114,22 @@ def run_test():
 
 if __name__ == "__main__":
     xy_qs = run_test()
+    from gensim.corpora import Dictionary
+    doc=[x[0] for x in xy_qs]+[y[1] for y in xy_qs]
+    dct=Dictionary(doc)
+    no_below=int(dct.num_docs*0.0001) #至少不低于万分之一的频率 为常用词
+    no_above=0.3 #过高词不高于0.3的频率
+    dct.filter_extremes(no_below,no_above)
+    from matplotlib import pyplot as plt
+    fs=[x for x in dct.dfs.values()]
+    import numpy as np
+    ans=np.histogram(fs,bins=100,range=[0,1000])
+    plt.hist(fs,bins=100,range=[0,1000])
+    
+    
+    
+    
+    
+    
+    
+    

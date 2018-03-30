@@ -1,0 +1,8 @@
+/corpus/SQuAD/
+/corpus/dictionary/
+/tf_seq2seq_QA/__pycache__/
+/tf_seq2seq_QA/log/
+/tf_seq2seq_QA/model/
+/tf_seq2seq_QA/data/
+/tf_seq2seq_QA/embedding/
+*.pyc
